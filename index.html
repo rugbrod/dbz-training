@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#07080C">
+<title>Training System</title>
+<style>
+:root {
+  --bg:    #07080C;
+  --s1:    #0D0F15;   /* card surface */
+  --s2:    #141620;   /* input / chip */
+  --s3:    #1C1E2A;   /* hover / active */
+  --b1:    #1C1E2C;   /* subtle border */
+  --b2:    #272940;   /* stronger border */
+  --t1:    #EAEBF4;   /* text primary */
+  --t2:    #58596E;   /* text secondary */
+  --t3:    #353647;   /* text ghost */
+  --lime:  #B8F040;   /* primary accent */
+  --lime-a: rgba(184,240,64,.08);
+  --lime-b: rgba(184,240,64,.25);
+  --green: #2CD4A0;   /* data positive */
+  --red:   #F87171;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top, 0) 0 100px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── HEADER ───────────────────────────────── */
+header {
+  padding: 24px 20px 0;
+  margin-bottom: 22px;
+}
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.header-left {}
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+}
+.header-date {
+  text-align: right;
+  padding-bottom: 3px;
+}
+.header-date .hd-day {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+  display: block;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.header-date .hd-date {
+  font-size: 11px;
+  color: var(--t2);
+  display: block;
+}
+
+/* ─── NAVIGATION ────────────────────────────── */
+.nav-wrap {
+  border-bottom: 1px solid var(--b1);
+  margin-bottom: 24px;
+}
+.nav {
+  display: flex;
+  padding: 0 20px;
+  gap: 2px;
+}
+.nav button {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--t2);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .01em;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.nav button.active {
+  color: var(--t1);
+  border-bottom-color: var(--lime);
+}
+
+/* ─── DAY SELECTOR ──────────────────────────── */
+.days {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 0 20px 20px;
+}
+.day-btn {
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--t1);
+  transition: border-color .15s, background .15s;
+  user-select: none;
+}
+.day-btn.selected {
+  background: var(--lime-a);
+  border-color: var(--lime-b);
+}
+.day-btn .d-type {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--t2);
+  display: block;
+}
+.day-btn.selected .d-type { color: var(--lime); }
+.day-btn .d-label {
+  font-size: 15px;
+  font-weight: 700;
+  display: block;
+  margin-top: 2px;
+  letter-spacing: -.01em;
+}
+.day-btn .d-sub {
+  font-size: 10px;
+  color: var(--t2);
+  display: block;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+.day-btn .d-last {
+  font-size: 10px;
+  color: var(--t3);
+  margin-top: 8px;
+  display: block;
+}
+.day-btn.selected .d-last { color: rgba(184,240,64,.5); }
+
+/* ─── WORKOUT ──────────────────────────────── */
+#workout { padding: 0 20px; }
+
+.session-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: 10px;
+}
+.sp-label { font-size: 11px; color: var(--t2); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; }
+.sp-val { font-size: 13px; font-weight: 700; color: var(--t1); }
+.sp-bar-wrap { flex: 1; height: 3px; background: var(--b2); border-radius: 100px; margin: 0 14px; overflow: hidden; }
+.sp-bar { height: 100%; background: var(--lime); border-radius: 100px; transition: width .3s; }
+
+/* ─── EXERCISE CARD ─────────────────────────── */
+.ex-card {
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.ex-card.bonus { border-color: var(--lime-b); }
+
+.ex-illu {
+  background: #060810;
+  border-bottom: 1px solid var(--b1);
+  padding: 10px 0 4px;
+  text-align: center;
+}
+.ex-illu svg {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.ex-body { padding: 16px 16px 18px; }
+
+.ex-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.ex-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -.01em;
+  flex: 1;
+}
+.prog-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--lime);
+  color: var(--bg);
+  border-radius: 100px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  letter-spacing: .02em;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.ex-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.ex-target {
+  font-size: 12px;
+  color: var(--t2);
+  font-variant-numeric: tabular-nums;
+}
+.ex-divider { width: 1px; height: 12px; background: var(--b2); flex-shrink: 0; }
+.ex-cue {
+  font-size: 11px;
+  color: var(--lime);
+  font-weight: 600;
+}
+
+.benefit {
+  background: var(--lime-a);
+  border-left: 2px solid var(--lime-b);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+/* ─── WEIGHT ROW ────────────────────────────── */
+.weight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.w-adj {
+  background: var(--s2);
+  border: 1px solid var(--b1);
+  border-radius: 8px;
+  color: var(--t1);
+  font-size: 20px;
+  font-weight: 300;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s;
+  user-select: none;
+}
+.w-adj:active { background: var(--s3); }
+.weight-input {
+  background: var(--s2);
+  border: 1px solid var(--b2);
+  border-radius: 8px;
+  color: var(--t1);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 10px;
+  width: 80px;
+  text-align: center;
+  -moz-appearance: textfield;
+  font-variant-numeric: tabular-nums;
+}
+.weight-input::-webkit-inner-spin-button,
+.weight-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.weight-input:focus { outline: none; border-color: var(--lime-b); }
+.weight-unit { font-size: 13px; color: var(--t2); font-weight: 600; }
+.last-weight { font-size: 11px; color: var(--t2); margin-left: auto; }
+
+/* ─── SET CHIPS ─────────────────────────────── */
+.sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.set-chip {
+  background: var(--s2);
+  border: 1px solid var(--b1);
+  border-radius: 10px;
+  padding: 12px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: background .12s, border-color .12s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 78px;
+  user-select: none;
+}
+.set-chip.done {
+  background: var(--lime-a);
+  border-color: var(--lime-b);
+}
+.set-chip .s-label {
+  font-size: 9px;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  display: block;
+  margin-bottom: 5px;
+}
+.set-chip.done .s-label { color: rgba(184,240,64,.4); }
+.set-chip .s-reps {
+  font-size: 22px;
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--t2);
+}
+.set-chip.done .s-reps { color: var(--lime); }
+.set-chip .s-w {
+  font-size: 10px;
+  display: block;
+  margin-top: 4px;
+  color: var(--t3);
+  font-variant-numeric: tabular-nums;
+}
+.set-chip.done .s-w { color: rgba(184,240,64,.5); }
+.rep-adjust {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.rep-adjust button {
+  background: rgba(255,255,255,.05);
+  border: none;
+  border-radius: 5px;
+  color: var(--t2);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 8px;
+  line-height: 1.4;
+  transition: background .1s;
+}
+.rep-adjust button:active { background: rgba(255,255,255,.1); }
+.set-chip.done .rep-adjust button { color: rgba(184,240,64,.7); }
+
+/* ─── HOW-TO ────────────────────────────────── */
+.howto-toggle {
+  background: none;
+  border: none;
+  color: var(--t2);
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 14px;
+  padding: 0;
+  font-weight: 600;
+  letter-spacing: .01em;
+  transition: color .15s;
+}
+.howto-toggle:hover { color: var(--t1); }
+.howto { display: none; margin-top: 12px; border-top: 1px solid var(--b1); padding-top: 12px; }
+.howto.open { display: block; }
+.howto-step {
+  display: flex;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.55;
+  border-bottom: 1px solid var(--b1);
+}
+.howto-step:last-child { border-bottom: none; }
+.howto-step .n {
+  color: var(--lime);
+  font-weight: 700;
+  font-size: 10px;
+  min-width: 16px;
+  padding-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── SAVE BUTTON ───────────────────────────── */
+.save-btn {
+  width: 100%;
+  background: var(--lime);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+  letter-spacing: .01em;
+  transition: opacity .15s;
+  -webkit-font-smoothing: antialiased;
+}
+.save-btn:active { opacity: .8; }
+.save-btn:disabled { opacity: .4; cursor: default; }
+
+/* ─── BONUS TEASER ──────────────────────────── */
+.bonus-teaser {
+  background: var(--s1);
+  border: 1px dashed var(--lime-b);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  user-select: none;
+}
+.bonus-teaser:hover {
+  border-color: rgba(184,240,64,.5);
+  background: var(--lime-a);
+}
+.bt-head {
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--lime);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.bt-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -.01em;
+}
+.bt-benefit {
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.6;
+}
+.bt-cta {
+  font-size: 12px;
+  color: var(--lime);
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ─── PROGRESSION ───────────────────────────── */
+#history { padding: 0 20px; }
+
+.hist-ex { margin-bottom: 28px; }
+.hist-ex-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.hist-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.hist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--b1);
+  font-size: 13px;
+}
+.hist-row:first-of-type { border-top: 1px solid var(--b1); }
+.hist-date { color: var(--t2); font-variant-numeric: tabular-nums; min-width: 36px; }
+.hist-detail { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t1); }
+.hist-trend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.trend-spark { display: block; opacity: .9; }
+.trend-label { font-size: 11px; color: var(--green); font-weight: 600; }
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--t2);
+  font-weight: 600;
+  margin: 0 0 12px;
+  padding-top: 4px;
+}
+
+.empty {
+  color: var(--t2);
+  font-size: 13px;
+  text-align: center;
+  padding: 48px 20px;
+  line-height: 1.7;
+}
+
+/* ─── SYSTEM TAB ────────────────────────────── */
+#view-sys { padding: 0 20px; }
+
+.supp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.supp-card {
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: 10px;
+  padding: 14px;
+}
+.supp-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.supp-desc { font-size: 12px; color: var(--t2); line-height: 1.5; }
+.supp-freq { font-size: 11px; color: var(--lime); margin-top: 8px; font-weight: 600; }
+
+.principle-row {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--b1);
+  align-items: flex-start;
+}
+.principle-row:last-child { border-bottom: none; }
+.p-icon { font-size: 16px; min-width: 24px; padding-top: 2px; }
+.p-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.p-desc { font-size: 12px; color: var(--t2); line-height: 1.6; }
+
+/* ─── TOAST ─────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lime);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px 24px;
+  border-radius: 100px;
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+/* ─── SYNC BAR ───────────────────────────────── */
+#syncbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--red);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#syncbar button {
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ─── HIST DAY SELECTOR ─────────────────────── */
+#view-hist { padding: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="eyebrow">Attia · Huberman · Pareto</div>
+      <h1>Training System</h1>
+    </div>
+    <div class="header-date">
+      <span class="hd-day" id="hd-day"></span>
+      <span class="hd-date" id="hd-date"></span>
+    </div>
+  </div>
+</header>
+
+<div class="nav-wrap">
+  <div class="nav">
+    <button id="nav-train" class="active" onclick="setView('train')">Træn</button>
+    <button id="nav-hist" onclick="setView('hist')">Progression</button>
+    <button id="nav-sys" onclick="setView('sys')">System</button>
+  </div>
+</div>
+
+<div id="view-train">
+  <div class="days" id="days"></div>
+  <div id="workout"></div>
+</div>
+
+<div id="view-hist" style="display:none">
+  <div class="days" id="hist-days"></div>
+  <div id="history"></div>
+</div>
+
+<div id="view-sys" style="display:none">
+  <p class="section-label">Supplerende — ubryder ikke filosofien</p>
+  <div class="supp-grid">
+    <div class="supp-card">
+      <div class="supp-title">Zone 2 Cardio</div>
+      <div class="supp-desc">Cykling, roning eller løb i samtale-tempo. Attias vigtigste longevity-investering.</div>
+      <div class="supp-freq">2–3× / uge · 45–60 min</div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-title">VO2 Max</div>
+      <div class="supp-desc">4×4 min høj intensitet. Kritisk for kardiovaskulær funktion på lang sigt.</div>
+      <div class="supp-freq">1× / uge · 20–30 min</div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-title">Hyrox-specifik</div>
+      <div class="supp-desc">Ski erg, sled push, wall balls. Som 4. dag eller erstat én Zone 2.</div>
+      <div class="supp-freq">1× / uge · 30–45 min</div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-title">Mobilitet</div>
+      <div class="supp-desc">Hip flexor, thoracic, skulderrotation. Stabilitet er fundamentet.</div>
+      <div class="supp-freq">Dagligt · 10 min</div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-title">Road Cycling</div>
+      <div class="supp-desc">Canyon på rolige dage. Tæller som Zone 2 + aktiv recovery.</div>
+      <div class="supp-freq">1–2× / uge</div>
+    </div>
+    <div class="supp-card">
+      <div class="supp-title">Sauna</div>
+      <div class="supp-desc">57+ min/uge korrelerer med markant lavere kardiovaskulær mortalitet (Attia).</div>
+      <div class="supp-freq">2–4× / uge · 15–20 min</div>
+    </div>
+  </div>
+
+  <p class="section-label">Filosofien</p>
+  <div class="principle-row"><div class="p-icon">⚡</div><div><div class="p-title">Pareto 80/20</div><div class="p-desc">3–4 øvelser pr. session giver 80% af resultatet. Hver øvelse skal forsvare sin plads.</div></div></div>
+  <div class="principle-row"><div class="p-icon">▼</div><div><div class="p-title">Excentrisk fase = nøglen</div><div class="p-desc">Slow negatives (2–4 sek) bygger muskel og styrker sener. Attias mest undervurderede princip.</div></div></div>
+  <div class="principle-row"><div class="p-icon">◉</div><div><div class="p-title">HRV styrer intensitet</div><div class="p-desc">Grøn = kør tungt. Orange = −10–20% vægt, ingen PR-forsøg. Rød = hvile. Recovery er træningen.</div></div></div>
+  <div class="principle-row"><div class="p-icon">↕</div><div><div class="p-title">Grip strength = longevity</div><div class="p-desc">Pull-ups, rows og deadlifts er direkte investering i funktionel styrke livet igennem.</div></div></div>
+  <div class="principle-row"><div class="p-icon">✦</div><div><div class="p-title">3 dage er nok</div><div class="p-desc">Fuldt stimulus, maksimal recovery, minimal kompleksitet.</div></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Header date ────────────────────────────────────────────────
+(function() {
+  const now = new Date();
+  const days = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('hd-day').textContent = days[now.getDay()];
+  document.getElementById('hd-date').textContent = now.getDate() + ' ' + months[now.getMonth()];
+})();
+
+// ── SVG illustrations ──────────────────────────────────────────
+const G = '#3A3C4E', A = '#B8F040', AR = '#5A5B70';
+const S = (inner) => `<svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+
+const SVGS = {
+  pullup: S(`
+    <line x1="40" y1="18" x2="160" y2="18" stroke="#444" stroke-width="4"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="100" cy="55" r="7" fill="${G}" stroke="none"/><line x1="100" y1="62" x2="100" y2="94"/><line x1="100" y1="66" x2="86" y2="21"/><line x1="100" y1="66" x2="114" y2="21"/><line x1="100" y1="94" x2="93" y2="114"/><line x1="100" y1="94" x2="107" y2="114"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="100" cy="30" r="7" fill="${A}" stroke="none"/><line x1="100" y1="37" x2="100" y2="66"/><polyline points="100,42 84,32 86,21"/><polyline points="100,42 116,32 114,21"/><polyline points="100,66 94,82 98,94"/><polyline points="100,66 106,82 102,94"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="152" y1="62" x2="152" y2="36"/></g><polygon points="152,30 147,40 157,40" fill="${AR}"/>
+  `),
+  cablerow: S(`
+    <line x1="30" y1="112" x2="185" y2="112" stroke="#222" stroke-width="3"/>
+    <line x1="176" y1="34" x2="176" y2="110" stroke="#444" stroke-width="5"/><circle cx="173" cy="72" r="4" fill="#444"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="100" cy="47" r="7" fill="${G}" stroke="none"/><line x1="86" y1="98" x2="98" y2="55"/><line x1="96" y1="62" x2="148" y2="71"/></g>
+    <line x1="148" y1="71" x2="170" y2="72" stroke="#444" stroke-width="2" stroke-dasharray="4 4"/>
+    <g stroke="${A}" stroke-width="5"><circle cx="79" cy="42" r="7" fill="${A}" stroke="none"/><line x1="86" y1="98" x2="80" y2="50"/><polyline points="82,57 64,80 92,74"/><polyline points="86,98 124,92 150,106"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="138" y1="58" x2="110" y2="58"/></g><polygon points="104,58 114,53 114,63" fill="${AR}"/>
+  `),
+  inclinecurl: S(`
+    <line x1="55" y1="108" x2="115" y2="48" stroke="#444" stroke-width="5"/><line x1="85" y1="78" x2="85" y2="112" stroke="#333" stroke-width="4"/>
+    <circle cx="118" cy="40" r="7" fill="${A}"/>
+    <line x1="68" y1="96" x2="106" y2="58" stroke="${A}" stroke-width="5"/>
+    <polyline points="68,96 46,102 42,116" stroke="${A}" stroke-width="5"/>
+    <g stroke="${G}" stroke-width="5"><line x1="102" y1="60" x2="110" y2="102"/><line x1="103" y1="102" x2="117" y2="102"/></g>
+    <g stroke="${A}" stroke-width="5"><polyline points="102,60 112,84 134,64"/><line x1="130" y1="58" x2="138" y2="70"/></g>
+    <path d="M 116 98 Q 140 92 140 70" stroke="${AR}" stroke-width="2.5"/><polygon points="140,64 135,74 145,74" fill="${AR}"/>
+  `),
+  facepull: S(`
+    <line x1="178" y1="20" x2="178" y2="110" stroke="#444" stroke-width="5"/><circle cx="175" cy="40" r="4" fill="#444"/>
+    <g stroke="${G}" stroke-width="5"><line x1="72" y1="52" x2="148" y2="42"/></g>
+    <line x1="148" y1="42" x2="172" y2="40" stroke="#444" stroke-width="2" stroke-dasharray="4 4"/>
+    <g stroke="${A}" stroke-width="5"><circle cx="69" cy="36" r="7" fill="${A}" stroke="none"/><line x1="70" y1="44" x2="72" y2="84"/><polyline points="72,84 70,98 71,113"/><polyline points="72,84 76,98 74,113"/><polyline points="71,50 98,38 82,46"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="140" y1="28" x2="108" y2="30"/></g><polygon points="102,30 112,25 112,35" fill="${AR}"/>
+  `),
+  inclinepress: S(`
+    <line x1="48" y1="106" x2="106" y2="54" stroke="#444" stroke-width="5"/><line x1="78" y1="80" x2="78" y2="112" stroke="#333" stroke-width="4"/>
+    <circle cx="106" cy="46" r="7" fill="${A}"/>
+    <line x1="60" y1="96" x2="98" y2="58" stroke="${A}" stroke-width="5"/>
+    <polyline points="60,96 40,104 36,116" stroke="${A}" stroke-width="5"/>
+    <g stroke="${G}" stroke-width="5"><polyline points="94,62 108,80 116,66"/><line x1="111" y1="60" x2="121" y2="72"/></g>
+    <g stroke="${A}" stroke-width="5"><line x1="94" y1="62" x2="134" y2="30"/><line x1="128" y1="24" x2="140" y2="36"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="112" y1="58" x2="128" y2="44"/></g><polygon points="132,40 122,42 129,49" fill="${AR}"/>
+  `),
+  ohp: S(`
+    <line x1="40" y1="116" x2="160" y2="116" stroke="#222" stroke-width="3"/>
+    <g stroke="${G}" stroke-width="5"><polyline points="100,68 82,80 80,64"/><polyline points="100,68 118,80 120,64"/><line x1="74" y1="62" x2="86" y2="62"/><line x1="114" y1="62" x2="126" y2="62"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="100" cy="55" r="7" fill="${A}" stroke="none"/><line x1="100" y1="62" x2="100" y2="94"/><line x1="100" y1="94" x2="91" y2="116"/><line x1="100" y1="94" x2="109" y2="116"/><line x1="94" y1="66" x2="89" y2="24"/><line x1="106" y1="66" x2="111" y2="24"/><line x1="83" y1="22" x2="95" y2="22"/><line x1="105" y1="22" x2="117" y2="22"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="145" y1="58" x2="145" y2="32"/></g><polygon points="145,26 140,36 150,36" fill="${AR}"/>
+  `),
+  latraise: S(`
+    <line x1="40" y1="116" x2="160" y2="116" stroke="#222" stroke-width="3"/>
+    <g stroke="${G}" stroke-width="5"><line x1="100" y1="62" x2="89" y2="94"/><line x1="100" y1="62" x2="111" y2="94"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="100" cy="48" r="7" fill="${A}" stroke="none"/><line x1="100" y1="55" x2="100" y2="92"/><line x1="100" y1="92" x2="91" y2="116"/><line x1="100" y1="92" x2="109" y2="116"/><line x1="100" y1="60" x2="56" y2="54"/><line x1="100" y1="60" x2="144" y2="54"/></g>
+    <path d="M 118 88 Q 142 80 148 60" stroke="${AR}" stroke-width="2.5"/><polygon points="150,54 141,60 149,66" fill="${AR}"/>
+  `),
+  pushdown: S(`
+    <line x1="174" y1="20" x2="174" y2="110" stroke="#444" stroke-width="5"/><circle cx="171" cy="26" r="4" fill="#444"/>
+    <g stroke="${A}" stroke-width="5"><circle cx="88" cy="36" r="7" fill="${A}" stroke="none"/><line x1="89" y1="44" x2="84" y2="84"/><polyline points="84,84 80,98 81,113"/><polyline points="84,84 88,98 86,113"/></g>
+    <g stroke="${G}" stroke-width="5"><polyline points="90,50 97,66 122,48"/></g>
+    <line x1="122" y1="48" x2="168" y2="30" stroke="#444" stroke-width="2" stroke-dasharray="4 4"/>
+    <g stroke="${A}" stroke-width="5"><polyline points="90,50 97,66 118,92"/></g>
+    <path d="M 132 56 Q 132 80 122 92" stroke="${AR}" stroke-width="2.5"/><polygon points="117,97 120,87 128,93" fill="${AR}"/>
+  `),
+  bss: S(`
+    <line x1="30" y1="114" x2="185" y2="114" stroke="#222" stroke-width="3"/>
+    <line x1="128" y1="90" x2="172" y2="90" stroke="#444" stroke-width="5"/><line x1="134" y1="90" x2="134" y2="113" stroke="#333" stroke-width="4"/><line x1="166" y1="90" x2="166" y2="113" stroke="#333" stroke-width="4"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="76" cy="28" r="7" fill="${G}" stroke="none"/><line x1="77" y1="36" x2="82" y2="70"/><polyline points="82,70 79,92 78,113"/><polyline points="82,70 112,82 136,87"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="80" cy="50" r="7" fill="${A}" stroke="none"/><line x1="81" y1="58" x2="86" y2="88"/><polyline points="86,88 79,100 78,113"/><polyline points="86,88 116,104 136,87"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="52" y1="58" x2="52" y2="84"/></g><polygon points="52,90 47,80 57,80" fill="${AR}"/>
+  `),
+  rdl: S(`
+    <line x1="40" y1="116" x2="170" y2="116" stroke="#222" stroke-width="3"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="90" cy="28" r="7" fill="${G}" stroke="none"/><line x1="90" y1="35" x2="90" y2="80"/><line x1="94" y1="62" x2="96" y2="78"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="136" cy="58" r="7" fill="${A}" stroke="none"/><line x1="90" y1="80" x2="129" y2="61"/><line x1="122" y1="65" x2="120" y2="94"/><line x1="90" y1="80" x2="87" y2="116"/></g>
+    <circle cx="120" cy="100" r="7" stroke="${A}" stroke-width="4"/>
+    <path d="M 112 30 Q 142 32 148 48" stroke="${AR}" stroke-width="2.5"/><polygon points="150,54 142,48 152,44" fill="${AR}"/>
+  `),
+  calf: S(`
+    <line x1="50" y1="106" x2="122" y2="106" stroke="#444" stroke-width="5"/><line x1="122" y1="106" x2="122" y2="116" stroke="#444" stroke-width="5"/>
+    <g stroke="${G}" stroke-width="5"><line x1="106" y1="50" x2="109" y2="98"/><line x1="109" y1="98" x2="93" y2="110"/><line x1="109" y1="98" x2="119" y2="103"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="110" cy="26" r="7" fill="${A}" stroke="none"/><line x1="110" y1="33" x2="112" y2="44"/><line x1="112" y1="44" x2="114" y2="92"/><line x1="114" y1="92" x2="99" y2="86"/><line x1="114" y1="92" x2="120" y2="102"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="80" y1="104" x2="80" y2="84"/></g><polygon points="80,78 75,88 85,88" fill="${AR}"/>
+  `),
+  nordic: S(`
+    <line x1="30" y1="112" x2="185" y2="112" stroke="#222" stroke-width="3"/>
+    <line x1="142" y1="96" x2="142" y2="112" stroke="#444" stroke-width="5"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="108" cy="36" r="7" fill="${G}" stroke="none"/><line x1="108" y1="43" x2="110" y2="106"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="55" cy="64" r="7" fill="${A}" stroke="none"/><line x1="110" y1="106" x2="61" y2="69"/><line x1="68" y1="74" x2="62" y2="96"/><line x1="110" y1="106" x2="140" y2="108"/></g>
+    <path d="M 92 42 Q 66 44 58 54" stroke="${AR}" stroke-width="2.5"/><polygon points="54,58 58,49 64,57" fill="${AR}"/>
+  `),
+  hammercurl: S(`
+    <line x1="50" y1="116" x2="150" y2="116" stroke="#222" stroke-width="3"/>
+    <g stroke="${A}" stroke-width="5"><circle cx="90" cy="30" r="7" fill="${A}" stroke="none"/><line x1="90" y1="37" x2="90" y2="86"/><line x1="90" y1="86" x2="84" y2="116"/><line x1="90" y1="86" x2="96" y2="116"/></g>
+    <g stroke="${G}" stroke-width="5"><line x1="90" y1="48" x2="97" y2="86"/><line x1="97" y1="79" x2="97" y2="93"/></g>
+    <g stroke="${A}" stroke-width="5"><polyline points="90,48 97,70 117,52"/><line x1="119" y1="45" x2="119" y2="59"/></g>
+    <path d="M 105 84 Q 126 76 126 58" stroke="${AR}" stroke-width="2.5"/><polygon points="126,52 121,62 131,60" fill="${AR}"/>
+  `),
+  dips: S(`
+    <line x1="60" y1="56" x2="145" y2="56" stroke="#444" stroke-width="5"/><line x1="66" y1="56" x2="66" y2="112" stroke="#333" stroke-width="4"/><line x1="139" y1="56" x2="139" y2="112" stroke="#333" stroke-width="4"/>
+    <g stroke="${G}" stroke-width="5"><circle cx="100" cy="52" r="7" fill="${G}" stroke="none"/><line x1="100" y1="59" x2="103" y2="92"/><polyline points="100,62 84,74 82,57"/><polyline points="103,92 114,103 108,114"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="100" cy="28" r="7" fill="${A}" stroke="none"/><line x1="100" y1="35" x2="102" y2="70"/><line x1="100" y1="42" x2="82" y2="56"/><polyline points="102,70 113,84 107,98"/></g>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="160" y1="78" x2="160" y2="52"/></g><polygon points="160,46 155,56 165,56" fill="${AR}"/>
+  `),
+  hipthrust: S(`
+    <line x1="30" y1="112" x2="185" y2="112" stroke="#222" stroke-width="3"/>
+    <line x1="38" y1="72" x2="80" y2="72" stroke="#444" stroke-width="5"/><line x1="44" y1="72" x2="44" y2="111" stroke="#333" stroke-width="4"/><line x1="74" y1="72" x2="74" y2="111" stroke="#333" stroke-width="4"/>
+    <g stroke="${G}" stroke-width="5"><line x1="62" y1="72" x2="106" y2="96"/><polyline points="106,96 126,78 131,110"/></g>
+    <g stroke="${A}" stroke-width="5"><circle cx="50" cy="60" r="7" fill="${A}" stroke="none"/><line x1="60" y1="70" x2="112" y2="66"/><polyline points="112,66 131,74 131,110"/></g>
+    <circle cx="110" cy="58" r="7" stroke="${A}" stroke-width="4"/>
+    <g stroke="${AR}" stroke-width="2.5"><line x1="98" y1="98" x2="98" y2="76"/></g><polygon points="98,70 93,80 103,80" fill="${AR}"/>
+  `)
+};
+
+// ── Program definition ─────────────────────────────────────────
+const PROGRAM = {
+  pull: {
+    label: 'Pull', sub: 'Ryg · Biceps',
+    exercises: [
+      { name: 'Weighted Pull-ups', sets: 4, repsMin: 5, repsMax: 6, cue: '3 sek negativ · 90 sek pause', inc: 2.5, defaultW: 15, svg: 'pullup',
+        steps: ['Hæng i stangen, skulderbredde greb, bælte med vægt', 'Træk eksplosivt op til hagen er over stangen', 'Sænk dig kontrolleret over 3 sekunder — det er her gevinsten ligger'] },
+      { name: 'Seated Cable Row', sets: 3, repsMin: 10, repsMax: 10, cue: '2 sek hold i toppen · 60 sek pause', inc: 2.5, defaultW: 52.5, svg: 'cablerow',
+        steps: ['Sid med let bøjede knæ, ret ryg, tæt greb', 'Træk håndtaget til maven — albuer tæt på kroppen', 'Klem skulderbladene og hold 2 sek, før du slipper kontrolleret'] },
+      { name: 'Incline DB Curl', sets: 3, repsMin: 10, repsMax: 12, cue: 'Slow eccentric · 60 sek pause', inc: 2, defaultW: 12, svg: 'inclinecurl',
+        steps: ['Læn dig tilbage på incline-bænk (45°), arme hænger lige ned', 'Curl op uden at svinge — albuen bliver bagved kroppen', 'Sænk langsomt over 2–3 sekunder til fuld stræk'] },
+      { name: 'Face Pulls', sets: 3, repsMin: 15, repsMax: 15, cue: 'Albuer høje · 45 sek pause', inc: 2.5, defaultW: 17.5, svg: 'facepull',
+        steps: ['Reb på højt kabel i øjenhøjde, et skridt tilbage', 'Træk mod ansigtet — albuer høje og ud til siden', 'Slut med hænderne ved ørerne, hold 1–2 sek'] },
+    ],
+    bonus: { name: 'Hammer Curls', sets: 2, repsMin: 12, repsMax: 12, cue: 'Neutralt greb · 45 sek pause', inc: 2, defaultW: 12, svg: 'hammercurl',
+      benefit: 'Grip strength er en af de stærkeste longevity-markører der findes — og brachialis gør armen tykkere fra siden. 2 sæt, 5 minutter, dobbelt gevinst.',
+      steps: ['Stå med håndvægte i neutralt greb (tomlerne opad)', 'Curl op uden at rotere håndleddet — albuen bliver ved siden', 'Sænk langsomt. Grebet arbejder hele vejen'] }
+  },
+  push: {
+    label: 'Push', sub: 'Bryst · Skulder · Triceps',
+    exercises: [
+      { name: 'Incline DB Press', sets: 4, repsMin: 6, repsMax: 8, cue: '3 sek ned · 90 sek pause', inc: 2, defaultW: 26, svg: 'inclinepress',
+        steps: ['Bænk på 30–45°, håndvægte ved brystet, skulderblade trukket sammen', 'Pres op og let indad til armene er strakte', 'Sænk kontrolleret over 3 sekunder til let stræk i brystet'] },
+      { name: 'Overhead Press (DB)', sets: 3, repsMin: 8, repsMax: 10, cue: 'Stående · fuld ROM · 75 sek pause', inc: 2, defaultW: 16, svg: 'ohp',
+        steps: ['Stå med håndvægte ved skuldrene, core spændt', 'Pres lige op til fuld stræk — uden at svaje i lænden', 'Sænk kontrolleret tilbage til skulderhøjde'] },
+      { name: 'Lateral Raises', sets: 3, repsMin: 12, repsMax: 15, cue: '2 sek hold · 45 sek pause', inc: 1, defaultW: 8, svg: 'latraise',
+        steps: ['Stå med let bøjede albuer, håndvægte ved siden', 'Løft ud til siden til skulderhøjde — ikke højere', 'Hold 2 sek i toppen, sænk langsomt. Ingen sving'] },
+      { name: 'Tricep Pushdown', sets: 3, repsMin: 12, repsMax: 12, cue: 'Slow eccentric · 45 sek pause', inc: 2.5, defaultW: 25, svg: 'pushdown',
+        steps: ['Højt kabel, albuer låst ind til siden', 'Pres ned til fuld stræk i armen', 'Lad vægten trække langsomt op — albuerne flytter sig ikke'] },
+    ],
+    bonus: { name: 'Dips', sets: 2, repsMin: 8, repsMax: 10, cue: 'Kropsvægt · 60 sek pause', inc: 2.5, defaultW: 0, svg: 'dips',
+      benefit: 'Det mest compound ekstra-stimulus du kan få på push-dag: bryst, skulder og triceps i én bevægelse — plus skulderstabilitet i fuld ROM. Stort afkast for 2 sæt.',
+      steps: ['Grib parallelle barrer, armene strakte, læn let forover', 'Sænk dig kontrolleret til ca. 90° i albuen — ikke dybere hvis skulderen siger fra', 'Pres op til fuld stræk. Tilføj vægt når 2×10 er nemt'] }
+  },
+  legs: {
+    label: 'Ben', sub: 'Quad · Posterior',
+    exercises: [
+      { name: 'Bulgarian Split Squat', sets: 4, repsMin: 8, repsMax: 8, cue: '3 sek ned · pr. side · 90 sek pause', inc: 2, defaultW: 16, svg: 'bss',
+        steps: ['Bagerste fod på bænk, forreste fod ca. 60 cm foran', 'Sænk dig lige ned over 3 sek — knæ over fod, torso oprejst', 'Pres op gennem forreste hæl. Mærk efter i knæet — reducer dybde hvis det brokker sig'] },
+      { name: 'Romanian Deadlift', sets: 3, repsMin: 10, repsMax: 10, cue: 'Slow eccentric · 75 sek pause', inc: 5, defaultW: 60, svg: 'rdl',
+        steps: ['Stå med stangen, let bøjede knæ, ret ryg', 'Skyd hoften bagud og sænk stangen langs benene — ryggen forbliver ret', 'Stop ved let stræk i baglåret (ca. midt på skinnebenet), træk hoften frem'] },
+      { name: 'Calf Raise', sets: 3, repsMin: 15, repsMax: 15, cue: 'Fuld ROM · 45 sek pause', inc: 5, defaultW: 80, svg: 'calf',
+        steps: ['Forfod på kant/platform, hælen frit hængende', 'Sænk hælen helt ned til fuld stræk i læggen', 'Pres op på tæerne så højt som muligt, kort hold i toppen'] },
+      { name: 'Nordic / Hamstring Curl', sets: 3, repsMin: 8, repsMax: 10, cue: 'Excentrisk fokus · 60 sek pause', inc: 2.5, defaultW: 0, svg: 'nordic',
+        steps: ['Knæl med anklerne fikseret (partner, maskine eller rig)', 'Læn dig langsomt forover med ret krop — kæmp imod hele vejen', 'Grib dig selv med hænderne, skub let tilbage. Start med 2 sæt'] },
+    ],
+    bonus: { name: 'Hip Thrust', sets: 2, repsMin: 10, repsMax: 12, cue: '2 sek hold i toppen · 75 sek pause', inc: 5, defaultW: 60, svg: 'hipthrust',
+      benefit: 'Glute power = direkte overførsel til sled push og løb i Hyrox — og stærke glutes aflaster knæ og lænd. Den højeste ROI-tilføjelse på en ben-dag.',
+      steps: ['Skulderblade på bænk, stang over hoften (brug pad), fødder i hoftebredde', 'Pres hoften op til kroppen er vandret — klem glutes hårdt i 2 sek', 'Sænk kontrolleret. Hagen ind mod brystet hele vejen'] }
+  }
+};
+
+// ── State ──────────────────────────────────────────────────────
+let sessions  = [];
+let currentDay = 'pull';
+let histDay    = 'pull';
+let workState  = {};
+let openHowto  = {};
+let bonusOpen  = false;
+let unsynced   = false;
+
+// ── Data loading ───────────────────────────────────────────────
+async function loadData() {
+  // Try cloud first
+  try {
+    const res = await window.storage.get('sessions');
+    if (res && res.value) sessions = JSON.parse(res.value);
+  } catch (e) { sessions = []; }
+
+  // Fallback to local if cloud gave nothing
+  if (!sessions || sessions.length === 0) {
+    try {
+      const backup = localStorage.getItem('sessions_backup');
+      if (backup) sessions = JSON.parse(backup);
+    } catch (e) {}
+  }
+  if (!sessions) sessions = [];
+
+  // Normalize legacy format (reps as plain number → {reps, weight})
+  sessions.forEach(s => s.exercises.forEach(e => {
+    e.sets = e.sets.map(r =>
+      r === null || r === undefined ? null
+      : typeof r === 'number' ? { reps: r, weight: e.weight }
+      : r
+    );
+  }));
+
+  renderDays();
+  selectDay(currentDay);
+}
+
+// ── Persistence ────────────────────────────────────────────────
+async function persistSessions() {
+  const payload = JSON.stringify(sessions);
+
+  // Layer 1: local backup (instant, survives cloud outage)
+  let localOk = false;
+  try { localStorage.setItem('sessions_backup', payload); localOk = true; } catch (e) {}
+
+  // Layer 2: cloud with 3× retry + read-back verification
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await window.storage.set('sessions', payload);
+      const check = await window.storage.get('sessions');
+      if (check && check.value && JSON.parse(check.value).length === sessions.length) return true;
+    } catch (e) { console.error('Storage attempt ' + attempt + ' failed', e); }
+    await new Promise(r => setTimeout(r, 400 * attempt));
+  }
+
+  return localOk ? 'local' : false;
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--red)' : 'var(--lime)';
+  t.style.color = isError ? '#fff' : 'var(--bg)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function renderSyncBar() {
+  let bar = document.getElementById('syncbar');
+  if (!unsynced) { if (bar) bar.remove(); return; }
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'syncbar';
+    bar.innerHTML = '⚠️ Session ikke gemt &nbsp;<button onclick="retrySync()">Gem igen</button>';
+    document.body.prepend(bar);
+  }
+}
+
+async function retrySync() {
+  const ok = await persistSessions();
+  unsynced = (ok !== true);
+  renderSyncBar();
+  if (ok === true)      showToast('Gemt i skyen ✓', false);
+  else if (ok === 'local') showToast('Gemt lokalt ✓ — synker til sky ved næste session', false);
+  else                  showToast('Kunne ikke gemme — prøv igen om lidt', true);
+}
+
+async function saveData() {
+  const ok = await persistSessions();
+  unsynced = (ok !== true);
+  renderSyncBar();
+  return ok;
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function lastSession(day, exName) {
+  for (let i = sessions.length - 1; i >= 0; i--) {
+    if (sessions[i].day !== day) continue;
+    const ex = sessions[i].exercises.find(e => e.name === exName);
+    if (ex) return ex;
+  }
+  return null;
+}
+function lastSessionDate(day) {
+  for (let i = sessions.length - 1; i >= 0; i--)
+    if (sessions[i].day === day) return sessions[i].date;
+  return null;
+}
+function shouldProgress(day, ex) {
+  const last = lastSession(day, ex.name);
+  if (!last || !last.sets) return false;
+  const completed = last.sets.filter(r => r !== null && r !== undefined);
+  if (completed.length < ex.sets) return false;
+  return completed.every(r => r.reps >= ex.repsMax);
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+function allExercises(day) {
+  const d = PROGRAM[day];
+  return d.bonus ? [...d.exercises, d.bonus] : d.exercises;
+}
+function findEx(name) {
+  const d = PROGRAM[currentDay];
+  return d.exercises.find(e => e.name === name)
+    || (d.bonus && d.bonus.name === name ? d.bonus : null);
+}
+
+// ── Day rendering ──────────────────────────────────────────────
+function renderDays() {
+  ['days', 'hist-days'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    Object.keys(PROGRAM).forEach(key => {
+      const p   = PROGRAM[key];
+      const sel = ((id === 'days') ? currentDay : histDay) === key;
+      const last = lastSessionDate(key);
+      const btn = document.createElement('div');
+      btn.className = 'day-btn' + (sel ? ' selected' : '');
+      btn.innerHTML = `
+        <span class="d-type">${p.label}</span>
+        <span class="d-label">${p.label}</span>
+        <span class="d-sub">${p.sub}</span>
+        <span class="d-last">${last ? 'Sidst: ' + fmtDate(last) : 'Ingen endnu'}</span>
+      `;
+      btn.onclick = () => (id === 'days') ? selectDay(key) : selectHistDay(key);
+      el.appendChild(btn);
+    });
+  });
+}
+
+// ── Session progress bar ────────────────────────────────────────
+function sessionStats() {
+  const day = PROGRAM[currentDay];
+  const coreExes = bonusOpen ? allExercises(currentDay) : day.exercises;
+  let totalSets = 0, doneSets = 0;
+  coreExes.forEach(ex => {
+    const st = workState[ex.name];
+    if (!st) return;
+    totalSets += st.sets.length;
+    doneSets  += st.sets.filter(r => r !== null).length;
+  });
+  return { totalSets, doneSets };
+}
+
+// ── Select day ─────────────────────────────────────────────────
+function selectDay(day) {
+  currentDay = day;
+  workState  = {};
+  openHowto  = {};
+  bonusOpen  = false;
+  allExercises(day).forEach(ex => {
+    const last = lastSession(day, ex.name);
+    let w = last ? last.weight : ex.defaultW;
+    if (shouldProgress(day, ex)) w = Math.round((w + ex.inc) * 10) / 10;
+    workState[ex.name] = { weight: w, sets: new Array(ex.sets).fill(null) };
+  });
+  renderDays();
+  renderWorkout();
+}
+
+// ── Build exercise card ────────────────────────────────────────
+function buildCard(ex, isBonus) {
+  const st   = workState[ex.name];
+  const last = lastSession(currentDay, ex.name);
+  const prog = shouldProgress(currentDay, ex);
+  const card = document.createElement('div');
+  card.className = 'ex-card' + (isBonus ? ' bonus' : '');
+
+  let setsHtml = '';
+  st.sets.forEach((set, i) => {
+    const done = set !== null;
+    setsHtml += `
+      <div class="set-chip ${done ? 'done' : ''}" onclick="toggleSet('${ex.name}',${i},event)">
+        <span class="s-label">Sæt ${i+1}</span>
+        <span class="s-reps">${done ? set.reps : '—'}</span>
+        ${done ? `<span class="s-w">${set.weight} kg</span>
+        <div class="rep-adjust">
+          <button onclick="adjReps('${ex.name}',${i},-1,event)">−</button>
+          <button onclick="adjReps('${ex.name}',${i},1,event)">+</button>
+        </div>` : ''}
+      </div>`;
+  });
+
+  let stepsHtml = '';
+  ex.steps.forEach((s, i) => {
+    stepsHtml += `<div class="howto-step"><span class="n">${i+1}</span><span>${s}</span></div>`;
+  });
+
+  const ho = openHowto[ex.name];
+
+  card.innerHTML = `
+    <div class="ex-illu">${SVGS[ex.svg]}</div>
+    <div class="ex-body">
+      <div class="ex-head">
+        <div class="ex-name">${isBonus ? '⚡ ' : ''}${ex.name}</div>
+        ${prog ? `<span class="prog-badge">↑ +${ex.inc} kg</span>` : ''}
+      </div>
+      <div class="ex-meta">
+        <span class="ex-target">${ex.sets} × ${ex.repsMin === ex.repsMax ? ex.repsMin : ex.repsMin+'–'+ex.repsMax} reps</span>
+        <div class="ex-divider"></div>
+        <span class="ex-cue">${ex.cue}</span>
+      </div>
+      ${isBonus ? `<div class="benefit">${ex.benefit}</div>` : ''}
+      <div class="weight-row">
+        <button class="w-adj" onclick="adjWeight('${ex.name}',-1)">−</button>
+        <input class="weight-input" type="number" inputmode="decimal" value="${st.weight}"
+          onchange="setWeight('${ex.name}',this.value)" onfocus="this.select()">
+        <button class="w-adj" onclick="adjWeight('${ex.name}',1)">+</button>
+        <span class="weight-unit">kg</span>
+        ${last ? `<span class="last-weight">Sidst: ${last.weight} kg</span>` : ''}
+      </div>
+      <div class="sets">${setsHtml}</div>
+      <button class="howto-toggle" onclick="toggleHowto('${ex.name}')">
+        Sådan gør du ${ho ? '▴' : '▾'}
+      </button>
+      <div class="howto ${ho ? 'open' : ''}">${stepsHtml}</div>
+    </div>`;
+  return card;
+}
+
+// ── Render workout ─────────────────────────────────────────────
+function renderWorkout() {
+  const day = PROGRAM[currentDay];
+  const el  = document.getElementById('workout');
+  el.innerHTML = '';
+
+  // Session progress bar
+  const { totalSets, doneSets } = sessionStats();
+  const pct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+  const progressEl = document.createElement('div');
+  progressEl.className = 'session-progress';
+  progressEl.innerHTML = `
+    <span class="sp-label">Session</span>
+    <div class="sp-bar-wrap"><div class="sp-bar" style="width:${pct}%"></div></div>
+    <span class="sp-val">${doneSets} / ${totalSets}</span>
+  `;
+  el.appendChild(progressEl);
+
+  day.exercises.forEach(ex => el.appendChild(buildCard(ex, false)));
+
+  if (day.bonus) {
+    if (bonusOpen) {
+      el.appendChild(buildCard(day.bonus, true));
+    } else {
+      const teaser = document.createElement('div');
+      teaser.className = 'bonus-teaser';
+      teaser.onclick = () => { bonusOpen = true; renderWorkout(); };
+      teaser.innerHTML = `
+        <div class="bt-head">⚡ Overskud i dag?</div>
+        <div class="bt-name">${day.bonus.name} · ${day.bonus.sets} sæt · ~5 min</div>
+        <div class="bt-benefit">${day.bonus.benefit}</div>
+        <div class="bt-cta">Tap for at tilføje →</div>
+      `;
+      el.appendChild(teaser);
+    }
+  }
+
+  const btn = document.createElement('button');
+  btn.className = 'save-btn';
+  btn.textContent = doneSets === 0 ? 'Log sæt for at gemme' : 'Gem session';
+  btn.disabled = doneSets === 0;
+  btn.onclick = saveSession;
+  el.appendChild(btn);
+}
+
+// ── Interaction handlers ───────────────────────────────────────
+function toggleHowto(exName) {
+  openHowto[exName] = !openHowto[exName];
+  renderWorkout();
+}
+function toggleSet(exName, i, event) {
+  if (event.target.tagName === 'BUTTON') return;
+  const ex = findEx(exName);
+  const st = workState[exName];
+  st.sets[i] = st.sets[i] === null
+    ? { reps: ex.repsMax, weight: st.weight }
+    : null;
+  renderWorkout();
+}
+function adjReps(exName, i, delta, event) {
+  event.stopPropagation();
+  const set = workState[exName].sets[i];
+  set.reps = Math.max(0, set.reps + delta);
+  renderWorkout();
+}
+function adjWeight(exName, dir) {
+  const st = workState[exName];
+  st.weight = Math.max(0, Math.round((st.weight + dir * 1) * 10) / 10);
+  renderWorkout();
+}
+function setWeight(exName, val) {
+  workState[exName].weight = parseFloat(val) || 0;
+}
+
+// ── Save session ───────────────────────────────────────────────
+async function saveSession() {
+  const exercises = allExercises(currentDay)
+    .filter(ex => workState[ex.name] && workState[ex.name].sets.some(r => r !== null))
+    .map(ex => {
+      const sets = workState[ex.name].sets;
+      const done = sets.filter(r => r !== null);
+      const topWeight = done.length > 0 ? Math.max(...done.map(s => s.weight)) : 0;
+      return { name: ex.name, weight: topWeight, sets };
+    });
+
+  if (exercises.length === 0) return;
+
+  sessions.push({ date: new Date().toISOString(), day: currentDay, exercises });
+  const ok = await saveData();
+
+  if (ok === true)      showToast('Session gemt i skyen ✓', false);
+  else if (ok === 'local') showToast('Gemt lokalt ✓ — data er sikre', false);
+  else                  showToast('Ikke gemt — tap "Gem igen" øverst', true);
+
+  if (ok) selectDay(currentDay);
+}
+
+// ── Sparkline ──────────────────────────────────────────────────
+function sparkline(weights) {
+  if (weights.length < 2) return '';
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const range = max - min || 1;
+  const W = 64, H = 26, pad = 3;
+
+  const pts = weights.map((v, i) => {
+    const x = pad + (i / (weights.length - 1)) * (W - pad * 2);
+    const y = pad + (1 - (v - min) / range) * (H - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  const last = pts.split(' ').at(-1).split(',');
+
+  return `<svg class="trend-spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="${pts}" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="var(--green)"/>
+  </svg>`;
+}
+
+// ── Progression ────────────────────────────────────────────────
+function selectHistDay(day) { histDay = day; renderDays(); renderHistory(); }
+
+function renderHistory() {
+  const el = document.getElementById('history');
+  el.innerHTML = '';
+  const daySessions = sessions.filter(s => s.day === histDay);
+
+  if (daySessions.length === 0) {
+    el.innerHTML = `<div class="empty">Ingen sessioner endnu.<br>Gem din første ${PROGRAM[histDay].label}-session for at se progression her.</div>`;
+    return;
+  }
+
+  allExercises(histDay).forEach(ex => {
+    const entries = [];
+    daySessions.forEach(s => {
+      const e = s.exercises.find(x => x.name === ex.name);
+      if (e) entries.push({ date: s.date, weight: e.weight, sets: e.sets });
+    });
+    if (entries.length === 0) return;
+
+    const div = document.createElement('div');
+    div.className = 'hist-ex';
+
+    // Last 6 sessions
+    const recent = entries.slice(-6).reverse();
+    let rows = recent.map(en => {
+      const reps = en.sets.filter(r => r !== null).map(s => `${s.weight}×${s.reps}`).join(' · ');
+      return `<div class="hist-row">
+        <span class="hist-date">${fmtDate(en.date)}</span>
+        <span class="hist-detail">${reps || '—'}</span>
+      </div>`;
+    }).join('');
+
+    // Trend (all entries, not just recent)
+    const weights = entries.map(e => e.weight);
+    const first   = weights[0];
+    const latest  = weights[weights.length - 1];
+    const diff    = latest - first;
+    const diffStr = diff > 0 ? `+${diff} kg` : diff < 0 ? `${diff} kg` : 'ingen ændring';
+    const trendHtml = weights.length >= 2
+      ? `<div class="hist-trend">
+          ${sparkline(weights)}
+          <span class="trend-label">${first} → ${latest} kg &nbsp;(${diffStr})</span>
+        </div>`
+      : '';
+
+    div.innerHTML = `
+      <div class="hist-ex-header">
+        <div class="hist-title">${ex.name}</div>
+      </div>
+      ${rows}
+      ${trendHtml}
+    `;
+    el.appendChild(div);
+  });
+}
+
+// ── View switching ─────────────────────────────────────────────
+function setView(v) {
+  const views = ['train', 'hist', 'sys'];
+  views.forEach(x => {
+    const id = x === 'train' ? 'view-train' : x === 'hist' ? 'view-hist' : 'view-sys';
+    document.getElementById(id).style.display = (x === v) ? 'block' : 'none';
+    document.getElementById('nav-' + (x === 'train' ? 'train' : x === 'hist' ? 'hist' : 'sys'))
+      .classList.toggle('active', x === v);
+  });
+  if (v === 'hist') renderHistory();
+}
+
+// ── Boot ───────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
