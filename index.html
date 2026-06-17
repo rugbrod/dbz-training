@@ -557,6 +557,89 @@ h1 {
 .p-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
 .p-desc { font-size: 12px; color: var(--t2); line-height: 1.6; }
 
+/* ─── PIN GATE ──────────────────────────────── */
+#pin-gate {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.pin-inner {
+  text-align: center;
+  max-width: 320px;
+  width: 100%;
+}
+.pin-eyebrow {
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+#pin-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  margin-bottom: 6px;
+}
+#pin-sub {
+  font-size: 13px;
+  color: var(--t2);
+  margin-bottom: 36px;
+  min-height: 20px;
+}
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 44px;
+}
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--b2);
+  transition: background .1s, border-color .1s;
+}
+.pin-dot.filled {
+  background: var(--lime);
+  border-color: var(--lime);
+}
+@keyframes pinShake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-7px); }
+  80%      { transform: translateX(7px); }
+}
+.pin-dots.shake { animation: pinShake .4s ease; }
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.pin-key {
+  background: var(--s1);
+  border: 1px solid var(--b1);
+  border-radius: 14px;
+  color: var(--t1);
+  font-size: 22px;
+  font-weight: 600;
+  padding: 20px 0;
+  cursor: pointer;
+  transition: background .1s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pin-key:active { background: var(--s3); }
+.pin-key.del { font-size: 16px; color: var(--t2); }
+.pin-key.empty { background: none; border-color: transparent; cursor: default; }
+
 /* ─── TOAST ─────────────────────────────────── */
 .toast {
   position: fixed;
@@ -609,6 +692,35 @@ h1 {
 </style>
 </head>
 <body>
+
+<!-- ── PIN GATE ─────────────────────────────────────────────── -->
+<div id="pin-gate">
+  <div class="pin-inner">
+    <div class="pin-eyebrow">Training System</div>
+    <div id="pin-title">Velkommen tilbage</div>
+    <div id="pin-sub">Indtast din PIN</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinDigit('1')">1</button>
+      <button class="pin-key" onclick="pinDigit('2')">2</button>
+      <button class="pin-key" onclick="pinDigit('3')">3</button>
+      <button class="pin-key" onclick="pinDigit('4')">4</button>
+      <button class="pin-key" onclick="pinDigit('5')">5</button>
+      <button class="pin-key" onclick="pinDigit('6')">6</button>
+      <button class="pin-key" onclick="pinDigit('7')">7</button>
+      <button class="pin-key" onclick="pinDigit('8')">8</button>
+      <button class="pin-key" onclick="pinDigit('9')">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pinDigit('0')">0</button>
+      <button class="pin-key del" onclick="pinDelete()">⌫</button>
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="header-inner">
@@ -1306,8 +1418,84 @@ function setView(v) {
   if (v === 'hist') renderHistory();
 }
 
+// ── PIN Gate ───────────────────────────────────────────────────
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+let pinBuffer   = '';
+let pinMode     = 'enter'; // 'enter' | 'setup-new' | 'setup-confirm'
+let pinFirst    = '';
+
+function renderPinDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('d' + i).classList.toggle('filled', i < pinBuffer.length);
+}
+
+function setPinState(title, sub) {
+  document.getElementById('pin-title').textContent = title;
+  document.getElementById('pin-sub').textContent   = sub;
+  pinBuffer = '';
+  renderPinDots();
+}
+
+async function initPin() {
+  const stored = localStorage.getItem('pin_hash');
+  if (!stored) {
+    pinMode = 'setup-new';
+    setPinState('Opret en PIN', 'Vælg 4 cifre der låser appen');
+  } else {
+    pinMode = 'enter';
+    setPinState('Velkommen tilbage', 'Indtast din PIN');
+  }
+}
+
+function pinDigit(d) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  renderPinDots();
+  if (pinBuffer.length === 4) setTimeout(handlePinComplete, 80);
+}
+
+function pinDelete() {
+  if (pinBuffer.length > 0) { pinBuffer = pinBuffer.slice(0,-1); renderPinDots(); }
+}
+
+async function handlePinComplete() {
+  const hash = await sha256(pinBuffer);
+
+  if (pinMode === 'enter') {
+    if (hash === localStorage.getItem('pin_hash')) {
+      document.getElementById('pin-gate').style.display = 'none';
+      loadData();
+    } else {
+      pinBuffer = '';
+      renderPinDots();
+      const dots = document.getElementById('pin-dots');
+      dots.classList.add('shake');
+      document.getElementById('pin-sub').textContent = 'Forkert PIN — prøv igen';
+      setTimeout(() => dots.classList.remove('shake'), 450);
+    }
+  } else if (pinMode === 'setup-new') {
+    pinFirst  = pinBuffer;
+    pinMode   = 'setup-confirm';
+    setPinState('Bekræft PIN', 'Indtast din PIN igen');
+  } else if (pinMode === 'setup-confirm') {
+    if (pinBuffer === pinFirst) {
+      localStorage.setItem('pin_hash', hash);
+      document.getElementById('pin-gate').style.display = 'none';
+      loadData();
+    } else {
+      pinFirst = '';
+      pinMode  = 'setup-new';
+      setPinState('Opret en PIN', 'PINs matchede ikke — prøv igen');
+    }
+  }
+}
+
 // ── Boot ───────────────────────────────────────────────────────
-loadData();
+initPin();
 </script>
 </body>
 </html>
